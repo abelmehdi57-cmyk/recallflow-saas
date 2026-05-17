@@ -1,5 +1,17 @@
 export type ClientStatus = 'new' | 'confirmed' | 'follow-up' | 'closed' | 'ghosted';
 
+export type Client = {
+  id: string;
+  business_id: string;
+  name: string;
+  phone: string | null;
+  service: string | null;
+  status: ClientStatus;
+  notes: string | null;
+  last_contact: string | null;
+  created_at: string;
+};
+
 export type Business = {
   id: string;
   owner_id: string;
