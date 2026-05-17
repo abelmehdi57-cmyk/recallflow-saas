@@ -26,3 +26,16 @@ export type ReminderWithClient = {
   date: string;
   clients: { name: string } | { name: string }[] | null;
 };
+
+export type Appointment = {
+  id: string;
+  business_id: string;
+  client_id: string;
+  date: string;
+  confirmed: boolean;
+  showed_up: boolean;
+  paid: boolean;
+  notes: string | null;
+  created_at: string;
+  clients: { name: string } | { name: string }[] | null;
+};
