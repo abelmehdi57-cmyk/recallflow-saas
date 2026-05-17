@@ -162,6 +162,71 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section className="py-20 px-4 sm:px-6 border-t border-border/50">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Simple, transparent pricing</h2>
+            <p className="text-muted max-w-xl mx-auto">
+              Start free and upgrade when your business grows. No hidden fees.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col">
+              <h3 className="text-lg font-semibold text-foreground mb-1">Free</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-foreground">$0</span>
+                <span className="text-muted text-sm">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {['Up to 20 clients', '10 appointments/month', 'Basic reminders'].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-muted">
+                    <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/signup"
+                className="block w-full text-center px-6 py-3 bg-card hover:bg-card-hover border border-border text-foreground font-semibold rounded-xl text-sm transition-colors"
+              >
+                Get Started Free
+              </Link>
+            </div>
+
+            <div className="relative bg-primary/5 border border-primary rounded-2xl p-6 sm:p-8 flex flex-col">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-white text-xs font-semibold rounded-full">
+                Most Popular
+              </span>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Pro</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-foreground">$19</span>
+                <span className="text-muted text-sm">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {['Unlimited clients', 'Unlimited appointments', 'Priority reminders'].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-muted">
+                    <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/signup"
+                className="block w-full text-center px-6 py-3 bg-primary hover:bg-primary-hover text-white font-semibold rounded-xl text-sm transition-all hover:shadow-lg hover:shadow-primary/25"
+              >
+                Start Free Trial
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-20 px-4 sm:px-6 border-t border-border/50">
         <div className="max-w-2xl mx-auto text-center">
