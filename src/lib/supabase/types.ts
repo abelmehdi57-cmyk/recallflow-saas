@@ -39,3 +39,14 @@ export type Appointment = {
   created_at: string;
   clients: { name: string } | { name: string }[] | null;
 };
+
+export type Reminder = {
+  id: string;
+  business_id: string;
+  client_id: string;
+  date: string;
+  message: string;
+  done: boolean;
+  created_at: string;
+  clients: { name: string } | { name: string }[] | null;
+};
