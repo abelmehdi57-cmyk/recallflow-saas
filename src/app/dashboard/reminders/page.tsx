@@ -513,7 +513,8 @@ export default function RemindersPage() {
             </form>
           </div>
         </div>
-      )}
+
+)}
     </div>
   );
 }
