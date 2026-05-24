@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 const navItems = [
   {
-    name: 'Dashboard',
+    key: 'dashboard',
     href: '/dashboard',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -16,7 +17,7 @@ const navItems = [
     ),
   },
   {
-    name: 'Clients',
+    key: 'clients',
     href: '/dashboard/clients',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -25,7 +26,7 @@ const navItems = [
     ),
   },
   {
-    name: 'Appointments',
+    key: 'appointments',
     href: '/dashboard/appointments',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -34,7 +35,7 @@ const navItems = [
     ),
   },
   {
-    name: 'Reminders',
+    key: 'reminders',
     href: '/dashboard/reminders',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -43,7 +44,7 @@ const navItems = [
     ),
   },
   {
-    name: 'Settings',
+    key: 'settings',
     href: '/dashboard/settings',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -59,18 +60,23 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations('DashboardLayout');
+  const [supabase] = useState(() => createClient());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [businessName, setBusinessName] = useState('');
   const [userEmail, setUserEmail] = useState('');
+  const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    const supabase = createClient();
+    let active = true;
 
-    const fetchUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    async function fetchUserData() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!active || !user) return;
 
       setUserEmail(user.email || '');
 
@@ -78,22 +84,59 @@ export default function DashboardLayout({
         .from('businesses')
         .select('business_name')
         .eq('owner_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(1)
         .maybeSingle();
+
+      if (!active) return;
 
       if (!error && business) {
         setBusinessName(business.business_name);
       }
-    };
+    }
 
-    fetchUserData();
-  }, []);
+    void fetchUserData();
+
+    return () => {
+      active = false;
+    };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [sidebarOpen]);
 
   const handleLogout = async () => {
-    const supabase = createClient();
+    if (loggingOut) return;
+    setLoggingOut(true);
     await supabase.auth.signOut();
     router.push('/login');
     router.refresh();
   };
+
+  function getPageTitle(): string {
+    if (pathname === '/dashboard') {
+      return t('pages.dashboard');
+    }
+    if (pathname.startsWith('/dashboard/clients')) {
+      return t('pages.clients');
+    }
+    if (pathname.startsWith('/dashboard/appointments')) {
+      return t('pages.appointments');
+    }
+    if (pathname.startsWith('/dashboard/reminders')) {
+      return t('pages.reminders');
+    }
+    if (pathname.startsWith('/dashboard/settings')) {
+      return t('pages.settings');
+    }
+    return t('pages.dashboard');
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -107,8 +150,8 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-border flex flex-col transition-transform duration-200 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed lg:static inset-y-0 start-0 z-50 w-64 bg-sidebar border-r border-border flex flex-col transition-transform duration-200 ease-in-out ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full lg:translate-x-0 lg:rtl:translate-x-0'
         }`}
       >
         {/* Logo */}
@@ -124,7 +167,7 @@ export default function DashboardLayout({
           {/* Close button (mobile) */}
           <button
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden text-muted hover:text-foreground"
+            className="ms-auto lg:hidden text-muted hover:text-foreground"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -135,7 +178,7 @@ export default function DashboardLayout({
         {/* Business name */}
         {businessName && (
           <div className="px-6 py-3 border-b border-border">
-            <p className="text-xs text-muted uppercase tracking-wider">Business</p>
+            <p className="text-xs text-muted uppercase tracking-wider">{t('businessLabel')}</p>
             <p className="text-sm font-medium text-foreground truncate">{businessName}</p>
           </div>
         )}
@@ -143,10 +186,13 @@ export default function DashboardLayout({
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive =
+              item.href === '/dashboard'
+                ? pathname === '/dashboard'
+                : pathname.startsWith(item.href);
             return (
               <Link
-                key={item.name}
+                key={item.key}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -156,7 +202,7 @@ export default function DashboardLayout({
                 }`}
               >
                 <span className={isActive ? 'text-primary' : ''}>{item.icon}</span>
-                {item.name}
+                {t(`nav.${item.key}`)}
               </Link>
             );
           })}
@@ -169,17 +215,19 @@ export default function DashboardLayout({
               {userEmail.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{userEmail}</p>
+              <p className="text-sm font-medium text-foreground truncate" dir="ltr">{userEmail}</p>
             </div>
           </div>
           <button
+            type="button"
             onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-sm text-muted hover:text-danger hover:bg-danger-light transition-colors cursor-pointer"
+            disabled={loggingOut}
+            className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-sm text-muted hover:text-danger hover:bg-danger-light transition-colors cursor-pointer disabled:opacity-50"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
             </svg>
-            Sign out
+            {loggingOut ? t('signingOut') : t('signOut')}
           </button>
         </div>
       </aside>
@@ -190,17 +238,13 @@ export default function DashboardLayout({
         <header className="h-16 bg-sidebar/50 backdrop-blur-md border-b border-border flex items-center px-4 lg:px-6 sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 -ml-2 text-muted hover:text-foreground rounded-lg hover:bg-card transition-colors"
+            className="lg:hidden p-2 -ms-2 text-muted hover:text-foreground rounded-lg hover:bg-card transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
           </button>
-          <h1 className="text-lg font-semibold ml-2 lg:ml-0 capitalize">
-            {pathname === '/dashboard'
-              ? 'Dashboard'
-              : pathname.split('/').pop()?.replace(/-/g, ' ') || 'Dashboard'}
-          </h1>
+          <h1 className="text-lg font-semibold ms-2 lg:ms-0 capitalize">{getPageTitle()}</h1>
         </header>
 
         {/* Page content */}

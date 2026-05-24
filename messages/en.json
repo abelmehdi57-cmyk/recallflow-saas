@@ -1,0 +1,481 @@
+{
+  "DashboardLayout": {
+    "businessLabel": "Business",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…",
+    "nav": {
+      "dashboard": "Dashboard",
+      "clients": "Clients",
+      "appointments": "Appointments",
+      "reminders": "Reminders",
+      "settings": "Settings"
+    },
+    "pages": {
+      "dashboard": "Dashboard",
+      "clients": "Clients",
+      "appointments": "Appointments",
+      "reminders": "Reminders",
+      "settings": "Settings"
+    }
+  },
+  "DashboardPage": {
+    "setupRequiredTitle": "Database setup required",
+    "businessMissingTitle": "Business profile missing",
+    "setupRequiredDescription": "Run supabase/schema.sql in the SQL editor, then try again.",
+    "businessMissingDescription": "Your account exists but has no business profile yet.",
+    "loadFailedTitle": "Could not load dashboard",
+    "loadFailedDescription": "Run the Phase 2 migration in your Supabase SQL editor if you haven't already.",
+    "stats": {
+      "todayAppointments": "Today's Appointments",
+      "pendingFollowUps": "Pending Follow-ups",
+      "noShowsMonth": "No-Shows This Month",
+      "pendingReminders": "Pending Reminders"
+    },
+    "actions": {
+      "manageClients": "Manage Clients",
+      "manageAppointments": "Manage Appointments",
+      "businessSettings": "Business Settings"
+    }
+  },
+  "DashboardLoading": {
+    "label": "Loading dashboard…"
+  },
+  "DashboardError": {
+    "title": "Something went wrong",
+    "description": "We couldn't load this page. Please try again.",
+    "retry": "Retry"
+  },
+  "SettingsPage": {
+    "business": {
+      "title": "Business Profile",
+      "description": "Used for revenue estimates, formatting, and dashboard analytics.",
+      "save": "Save Settings",
+      "saving": "Saving…",
+      "success": "Settings saved!",
+      "fields": {
+        "businessName": "Business Name",
+        "businessType": "Business Type",
+        "language": "Language",
+        "currency": "Currency",
+        "timezone": "Timezone",
+        "defaultAppointmentValue": "Default appointment value (for no-show / estimated loss)"
+      },
+      "placeholders": {
+        "businessName": "Your business name"
+      }
+    },
+    "account": {
+      "title": "Account",
+      "changePassword": "Change Password",
+      "sending": "Sending…",
+      "success": "Password reset email sent!",
+      "fields": {
+        "email": "Email"
+      }
+    },
+    "errors": {
+      "signedInRequired": "You must be signed in to manage settings.",
+      "businessNameRequired": "Business name is required.",
+      "defaultAppointmentValueInvalid": "Default appointment value must be positive.",
+      "accountEmailMissing": "No email address found for this account."
+    },
+    "languageOptions": {
+      "en": "English (en)",
+      "fr": "Français (fr)",
+      "ar": "العربية (ar)"
+    },
+    "businessTypeOptions": {
+      "salon": "Salon / Spa",
+      "restaurant": "Restaurant",
+      "clinic": "Clinic / Health",
+      "fitness": "Fitness / Coaching",
+      "retail": "Retail / Shop",
+      "professional": "Professional Services",
+      "general": "Other"
+    }
+  },
+  "LandingPage": {
+    "nav": {
+      "login": "Log in",
+      "startFreeTrial": "Start Free Trial"
+    },
+    "hero": {
+      "badge": "Built for salons, restaurants & service businesses",
+      "titlePart1": "Stop Losing Bookings",
+      "titlePart2": "& Clients",
+      "subtitle": "Track appointments, reduce no-shows, and never forget a follow-up. The simplest way to manage your client relationships.",
+      "startFreeTrial": "Start Free Trial",
+      "login": "Log in →",
+      "footer": "Free for up to 20 clients · No credit card required"
+    },
+    "features": {
+      "title": "Everything you need to manage clients",
+      "subtitle": "Simple, focused tools that solve real problems for service businesses.",
+      "f1": {
+        "title": "Client Database",
+        "desc": "Keep all your clients organized with contact info, service history, and status tracking."
+      },
+      "f2": {
+        "title": "Appointment Tracking",
+        "desc": "Track who confirmed, who showed up, and who paid — all in one place."
+      },
+      "f3": {
+        "title": "No-Show Detection",
+        "desc": "Instantly see who ghosted. Know which clients need extra attention."
+      },
+      "f4": {
+        "title": "Follow-up Reminders",
+        "desc": "Set reminders so you never forget to call a client back. Simple and effective."
+      },
+      "f5": {
+        "title": "Dashboard Analytics",
+        "desc": "See today's appointments, pending follow-ups, and no-shows at a glance."
+      },
+      "f6": {
+        "title": "Multi-Business Ready",
+        "desc": "Built as SaaS from day one. Each business gets its own isolated workspace."
+      }
+    },
+    "pricing": {
+      "title": "Simple, transparent pricing",
+      "subtitle": "Start free and upgrade when your business grows. No hidden fees.",
+      "free": {
+        "title": "Free",
+        "price": "$0",
+        "period": "/month",
+        "f1": "Up to 20 clients",
+        "f2": "10 appointments/month",
+        "f3": "Basic reminders",
+        "cta": "Get Started Free"
+      },
+      "pro": {
+        "badge": "Most Popular",
+        "title": "Pro",
+        "price": "$19",
+        "period": "/month",
+        "f1": "Unlimited clients",
+        "f2": "Unlimited appointments",
+        "f3": "Priority reminders",
+        "cta": "Start Free Trial"
+      }
+    },
+    "cta": {
+      "title": "Ready to stop losing clients?",
+      "subtitle": "Join service businesses that track every appointment and never miss a follow-up.",
+      "button": "Start Free Trial"
+    },
+    "footer": {
+      "copyright": "© {year} RecallFlow. All rights reserved."
+    }
+  },
+  "Auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "signIn": "Sign in",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "confirmationExpired": "Confirmation link expired or invalid. Please sign in again."
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Start tracking your bookings for free",
+      "businessName": "Business Name",
+      "email": "Email",
+      "password": "Password",
+      "createAccount": "Create account",
+      "creatingAccount": "Creating account...",
+      "checkEmail": "Check your email for the confirmation link.",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "backToLogin": "Back to login"
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter your email to receive a reset link.",
+      "email": "Email",
+      "sendLink": "Send link",
+      "sending": "Sending…",
+      "checkEmail": "Check your email for the reset link.",
+      "backToLogin": "Back to login"
+    },
+    "updatePassword": {
+      "title": "Set new password",
+      "subtitle": "Choose a secure password for your account.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "update": "Update password",
+      "updating": "Updating…",
+      "verifying": "Verifying link…",
+      "requestNew": "Request a new reset link",
+      "expired": "Your reset link has expired or is invalid.",
+      "backToLogin": "Back to login"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailExists": "This email already exists",
+      "generic": "Something went wrong. Please try again.",
+      "businessProfile": "Could not create your business profile. Check Supabase logs.",
+      "signedInRequired": "You must be signed in.",
+      "dbMissing": "Database tables are missing. Run schema.sql in Supabase."
+    }
+  },
+  "Components": {
+    "SetupNotice": {
+      "settingUp": "Setting up...",
+      "createProfile": "Create my business profile",
+      "firstTime": "First time? Run the database schema",
+      "step1": "Open your Supabase dashboard",
+      "step2": "SQL Editor → New query",
+      "step3": "Paste the contents of",
+      "step4": "Run it, then click the button above"
+    },
+    "ConfirmDialog": {
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "working": "Working…",
+      "close": "Close dialog"
+    },
+    "LoadingSpinner": {
+      "loading": "Loading…"
+    },
+    "ActionError": {
+      "dismiss": "Dismiss error"
+    }
+  },
+  "DashboardWidgets": {
+    "AppointmentAnalytics": {
+      "title": "Appointment Analytics",
+      "subtitle": "{total} total in the last 30 days"
+    },
+    "LostRevenueWidget": {
+      "title": "Estimated Lost Revenue (No-shows)",
+      "subtitle": "{count} no-show(s) this month",
+      "link": "View appointments →"
+    },
+    "RemindersUrgencyList": {
+      "title": "Reminders",
+      "viewAll": "View all",
+      "empty": "No pending reminders.",
+      "addOne": "Add one",
+      "unknownClient": "Unknown client"
+    },
+    "UpcomingAppointments": {
+      "title": "Upcoming Appointments",
+      "viewAll": "View all",
+      "empty": "No upcoming appointments.",
+      "scheduleOne": "Schedule one"
+    },
+    "WeeklyTrendChart": {
+      "title": "This Week's Appointments"
+    }
+  },
+  "Status": {
+    "appointments": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no-show": "No-show"
+    },
+    "clients": {
+      "new": "New",
+      "confirmed": "Confirmed",
+      "follow-up": "Follow-up",
+      "closed": "Closed",
+      "ghosted": "Ghosted"
+    },
+    "reminders": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "soon": "Soon",
+      "later": "Later"
+    },
+    "urgency": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "soon": "Soon",
+      "later": "Later"
+    }
+  },
+  "ClientsPage": {
+    "header": {
+      "loading": "Loading clients…",
+      "count": "{count} clients",
+      "addButton": "Add Client"
+    },
+    "empty": {
+      "title": "No clients yet",
+      "subtitle": "Add your first client to start tracking appointments and sending reminders.",
+      "addButton": "Add your first client"
+    },
+    "table": {
+      "name": "Name",
+      "phone": "Phone",
+      "service": "Service",
+      "status": "Status",
+      "lastContact": "Last Contact",
+      "actions": "Actions",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "deleteConfirm": {
+      "title": "Delete client?",
+      "message": "Delete {name}? This cannot be undone.",
+      "confirm": "Delete"
+    },
+    "modal": {
+      "editTitle": "Edit Client",
+      "addTitle": "Add Client",
+      "nameLabel": "Name",
+      "namePlaceholder": "Jane Smith",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "+1 555 0100",
+      "serviceLabel": "Service",
+      "servicePlaceholder": "Haircut, dinner reservation…",
+      "statusLabel": "Status",
+      "notesLabel": "Notes",
+      "notesPlaceholder": "Preferences, allergies, special requests…",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "addSubmit": "Add client",
+      "errorNoName": "Name is required."
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search by name, phone, or service…",
+      "searchLabel": "Search clients",
+      "allStatuses": "All statuses",
+      "sortNameAsc": "Name A–Z",
+      "sortNameDesc": "Name Z–A",
+      "sortNewest": "Newest first",
+      "sortOldest": "Oldest first"
+    }
+  },
+  "ClientDetailsPage": {
+    "notFound": "Client not found.",
+    "loading": "Loading client profile…",
+    "back": "← Back to clients",
+    "phone": "Phone:",
+    "service": "Service:",
+    "status": "Status:",
+    "revenue": "Revenue:",
+    "appointmentHistory": "Appointment History",
+    "newAppointment": "New Appointment",
+    "noAppointments": "No appointments yet.",
+    "table": {
+      "date": "Date",
+      "status": "Status",
+      "amount": "Amount"
+    }
+  },
+  "AppointmentsPage": {
+    "header": {
+      "loading": "Loading appointments…",
+      "count": "{count} appointments",
+      "addButton": "Add Appointment"
+    },
+    "unknownClient": "Unknown client",
+    "noClientsWarning": "Add at least one client before scheduling appointments.",
+    "goToClients": "Go to Clients",
+    "empty": {
+      "title": "No appointments yet",
+      "subtitle": "Schedule your first appointment to track confirmations, attendance, and payments.",
+      "addButton": "Add your first appointment"
+    },
+    "table": {
+      "clientName": "Client Name",
+      "date": "Date",
+      "status": "Status",
+      "revenue": "Revenue",
+      "actions": "Actions",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "deleteConfirm": {
+      "title": "Delete appointment?",
+      "message": "Delete appointment for {name} on {date}? This cannot be undone.",
+      "confirm": "Delete"
+    },
+    "modal": {
+      "editTitle": "Edit Appointment",
+      "addTitle": "Add Appointment",
+      "clientLabel": "Client",
+      "selectClient": "Select a client",
+      "dateLabel": "Date",
+      "statusLabel": "Status",
+      "notesLabel": "Notes",
+      "notesPlaceholder": "Special requests, room preference…",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "addSubmit": "Add appointment",
+      "errorNoClient": "Please select a client.",
+      "errorNoDate": "Date and time are required."
+    }
+  },
+  "RemindersPage": {
+    "header": {
+      "loading": "Loading reminders…",
+      "count": "{count} reminders",
+      "addButton": "Add Reminder"
+    },
+    "unknownClient": "Unknown client",
+    "noClientsWarning": "Add at least one client before creating reminders.",
+    "goToClients": "Go to Clients",
+    "empty": {
+      "title": "No reminders yet",
+      "subtitle": "Create follow-up reminders so you never miss a check-in with your clients.",
+      "addButton": "Add your first reminder"
+    },
+    "table": {
+      "clientName": "Client Name",
+      "message": "Message",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "actions": "Actions",
+      "markDone": "Mark as Done",
+      "saving": "Saving…",
+      "edit": "Edit",
+      "delete": "Delete",
+      "done": "Done"
+    },
+    "deleteConfirm": {
+      "title": "Delete reminder?",
+      "message": "Delete reminder for {name}? This cannot be undone.",
+      "confirm": "Delete"
+    },
+    "modal": {
+      "editTitle": "Edit Reminder",
+      "addTitle": "Add Reminder",
+      "quickPresets": "Quick presets",
+      "clientLabel": "Client",
+      "selectClient": "Select a client",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Follow up about their last visit…",
+      "dueDateLabel": "Due Date",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "addSubmit": "Add reminder",
+      "errorNoClient": "Please select a client.",
+      "errorNoMessage": "Message is required.",
+      "errorNoDate": "Due date is required."
+    },
+    "presets": {
+      "follow-up-24h": "Follow up in 24h",
+      "appointment-24h": "Appointment reminder (24h)",
+      "payment": "Payment follow-up",
+      "rebook": "Rebook nudge",
+      "msg-follow-up-24h": "Check in — how was your visit? Book your next appointment if you'd like.",
+      "msg-appointment-24h": "Reminder: you have an appointment tomorrow. Reply to confirm or reschedule.",
+      "msg-payment": "Friendly reminder about your outstanding balance. Let us know if you have questions.",
+      "msg-rebook": "It's been a while — would you like to schedule your next visit?"
+    }
+  }
+}

@@ -1,0 +1,487 @@
+{
+  "DashboardLayout": {
+    "businessLabel": "Entreprise",
+    "signOut": "Se déconnecter",
+    "signingOut": "Déconnexion…",
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "clients": "Clients",
+      "appointments": "Rendez-vous",
+      "reminders": "Rappels",
+      "settings": "Paramètres"
+    },
+    "pages": {
+      "dashboard": "Tableau de bord",
+      "clients": "Clients",
+      "appointments": "Rendez-vous",
+      "reminders": "Rappels",
+      "settings": "Paramètres"
+    }
+  },
+  "DashboardPage": {
+    "setupRequiredTitle": "Configuration de la base requise",
+    "businessMissingTitle": "Profil d'entreprise manquant",
+    "setupRequiredDescription": "Exécutez supabase/schema.sql dans l'éditeur SQL, puis réessayez.",
+    "businessMissingDescription": "Votre compte existe, mais aucun profil d'entreprise n'a encore été créé.",
+    "loadFailedTitle": "Impossible de charger le tableau de bord",
+    "loadFailedDescription": "Exécutez la migration Phase 2 dans l'éditeur SQL de Supabase si ce n'est pas déjà fait.",
+    "stats": {
+      "todayAppointments": "Rendez-vous du jour",
+      "pendingFollowUps": "Relances en attente",
+      "noShowsMonth": "Absences ce mois-ci",
+      "pendingReminders": "Rappels en attente"
+    },
+    "actions": {
+      "manageClients": "Gérer les clients",
+      "manageAppointments": "Gérer les rendez-vous",
+      "businessSettings": "Paramètres de l'entreprise"
+    }
+  },
+  "DashboardLoading": {
+    "label": "Chargement du tableau de bord…"
+  },
+  "DashboardError": {
+    "title": "Une erreur s'est produite",
+    "description": "Nous n'avons pas pu charger cette page. Réessayez.",
+    "retry": "Réessayer"
+  },
+  "SettingsPage": {
+    "business": {
+      "title": "Profil d'entreprise",
+      "description": "Utilisé pour les estimations de revenus, le formatage et les analyses du tableau de bord.",
+      "save": "Enregistrer les paramètres",
+      "saving": "Enregistrement…",
+      "success": "Paramètres enregistrés !",
+      "fields": {
+        "businessName": "Nom de l'entreprise",
+        "businessType": "Type d'entreprise",
+        "language": "Langue",
+        "currency": "Devise",
+        "timezone": "Fuseau horaire",
+        "defaultAppointmentValue": "Valeur par défaut d'un rendez-vous"
+      },
+      "placeholders": {
+        "businessName": "Nom de l'entreprise"
+      }
+    },
+    "account": {
+      "title": "Compte",
+      "changePassword": "Changer le mot de passe",
+      "sending": "Envoi…",
+      "success": "E-mail de réinitialisation envoyé !",
+      "fields": {
+        "email": "E-mail"
+      }
+    },
+    "errors": {
+      "signedInRequired": "Vous devez être connecté pour gérer les paramètres.",
+      "businessNameRequired": "Le nom de l'entreprise est requis.",
+      "defaultAppointmentValueInvalid": "La valeur par défaut doit être positive.",
+      "accountEmailMissing": "Aucune adresse e-mail trouvée pour ce compte."
+    },
+    "languageOptions": {
+      "en": "English (en)",
+      "fr": "Français (fr)",
+      "ar": "العربية (ar)"
+    },
+    "businessTypeOptions": {
+      "salon": "Salon / Spa",
+      "restaurant": "Restaurant",
+      "clinic": "Clinique / Santé",
+      "fitness": "Fitness / Coaching",
+      "retail": "Commerce / Boutique",
+      "professional": "Services professionnels",
+      "general": "Autre"
+    }
+  },
+  "LandingPage": {
+    "nav": {
+      "login": "Connexion",
+      "startFreeTrial": "Essai gratuit"
+    },
+    "hero": {
+      "badge": "Conçu pour les salons, restaurants et services",
+      "titlePart1": "Cessez de perdre des réservations",
+      "titlePart2": "et des clients",
+      "subtitle": "Suivez vos rendez-vous, réduisez les absences et n'oubliez jamais une relance.",
+      "startFreeTrial": "Essai gratuit",
+      "login": "Connexion →",
+      "footer": "Gratuit jusqu'à 20 clients · Aucune carte de crédit requise"
+    },
+    "features": {
+      "title": "Tout ce dont vous avez besoin pour gérer vos clients",
+      "subtitle": "Des outils simples et ciblés qui résolvent de vrais problèmes.",
+      "f1": {
+        "title": "Base de données clients",
+        "desc": "Gardez tous vos clients organisés avec leurs coordonnées, leur historique et leur statut."
+      },
+      "f2": {
+        "title": "Suivi des rendez-vous",
+        "desc": "Suivez qui a confirmé, qui s'est présenté et qui a payé."
+      },
+      "f3": {
+        "title": "Détection des absences",
+        "desc": "Voyez instantanément qui ne s'est pas présenté."
+      },
+      "f4": {
+        "title": "Rappels de relance",
+        "desc": "Définissez des rappels pour ne jamais oublier de rappeler un client."
+      },
+      "f5": {
+        "title": "Tableau de bord",
+        "desc": "Consultez d'un coup d'œil les rendez-vous du jour et les relances en attente."
+      },
+      "f6": {
+        "title": "Prêt pour le multi-entreprises",
+        "desc": "Conçu comme un SaaS dès le premier jour."
+      }
+    },
+    "pricing": {
+      "title": "Une tarification simple et transparente",
+      "subtitle": "Commencez gratuitement et mettez à niveau lorsque votre entreprise se développe.",
+      "free": {
+        "title": "Gratuit",
+        "price": "0 €",
+        "period": "/mois",
+        "f1": "Jusqu'à 20 clients",
+        "f2": "10 rendez-vous/mois",
+        "f3": "Rappels basiques",
+        "cta": "Commencer gratuitement"
+      },
+      "pro": {
+        "badge": "Plus populaire",
+        "title": "Pro",
+        "price": "19 €",
+        "period": "/mois",
+        "f1": "Clients illimités",
+        "f2": "Rendez-vous illimités",
+        "f3": "Rappels prioritaires",
+        "cta": "Essai gratuit"
+      }
+    },
+    "cta": {
+      "title": "Prêt à ne plus perdre de clients ?",
+      "subtitle": "Rejoignez les entreprises qui suivent chaque rendez-vous et ne manquent jamais une relance.",
+      "button": "Essai gratuit"
+    },
+    "footer": {
+      "copyright": "© {year} RecallFlow. Tous droits réservés."
+    }
+  },
+  "Auth": {
+    "login": {
+      "title": "Bon retour",
+      "subtitle": "Connectez-vous à votre compte",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "signIn": "Se connecter",
+      "signingIn": "Connexion en cours...",
+      "noAccount": "Vous n'avez pas de compte ?",
+      "signUp": "S'inscrire",
+      "confirmationExpired": "Le lien de confirmation a expiré ou est invalide."
+    },
+    "signup": {
+      "title": "Créez votre compte",
+      "subtitle": "Commencez à suivre vos réservations gratuitement",
+      "businessName": "Nom de l'entreprise",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "createAccount": "Créer un compte",
+      "creatingAccount": "Création du compte...",
+      "checkEmail": "Vérifiez vos e-mails pour le lien de confirmation.",
+      "haveAccount": "Vous avez déjà un compte ?",
+      "signIn": "Se connecter",
+      "backToLogin": "Retour à la connexion"
+    },
+    "forgotPassword": {
+      "title": "Réinitialiser le mot de passe",
+      "subtitle": "Entrez votre e-mail pour recevoir un lien de réinitialisation.",
+      "email": "E-mail",
+      "sendLink": "Envoyer le lien",
+      "sending": "Envoi en cours…",
+      "checkEmail": "Vérifiez vos e-mails pour le lien de réinitialisation.",
+      "backToLogin": "Retour à la connexion"
+    },
+    "updatePassword": {
+      "title": "Définir un nouveau mot de passe",
+      "subtitle": "Choisissez un mot de passe sécurisé.",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "update": "Mettre à jour le mot de passe",
+      "updating": "Mise à jour…",
+      "verifying": "Vérification du lien…",
+      "requestNew": "Demander un nouveau lien de réinitialisation",
+      "expired": "Votre lien de réinitialisation a expiré ou est invalide.",
+      "backToLogin": "Retour à la connexion"
+    },
+    "errors": {
+      "invalidCredentials": "E-mail ou mot de passe invalide",
+      "emailExists": "Cet e-mail existe déjà",
+      "generic": "Un problème est survenu. Veuillez réessayer.",
+      "businessProfile": "Impossible de créer votre profil d'entreprise.",
+      "signedInRequired": "Vous devez être connecté.",
+      "dbMissing": "Les tables de la base de données sont manquantes."
+    }
+  },
+  "Components": {
+    "SetupNotice": {
+      "settingUp": "Configuration...",
+      "createProfile": "Créer mon profil d'entreprise",
+      "firstTime": "Première fois ? Exécutez le schéma de la base de données",
+      "step1": "Ouvrez le tableau de bord Supabase",
+      "step2": "Éditeur SQL → Nouvelle requête",
+      "step3": "Collez le contenu de",
+      "step4": "Exécutez, puis cliquez sur le bouton ci-dessus"
+    },
+    "ConfirmDialog": {
+      "confirm": "Confirmer",
+      "cancel": "Annuler",
+      "working": "En cours…",
+      "close": "Fermer la boîte de dialogue"
+    },
+    "LoadingSpinner": {
+      "loading": "Chargement…"
+    },
+    "ActionError": {
+      "dismiss": "Fermer l'erreur"
+    }
+  },
+  "DashboardWidgets": {
+    "AppointmentAnalytics": {
+      "title": "Analyses des rendez-vous",
+      "subtitle": "{total} au total dans les 30 derniers jours"
+    },
+    "LostRevenueWidget": {
+      "title": "Perte de revenus estimée (absences)",
+      "subtitle": "{count} absence(s) ce mois-ci",
+      "link": "Voir les rendez-vous →"
+    },
+    "RemindersUrgencyList": {
+      "title": "Rappels",
+      "viewAll": "Voir tout",
+      "empty": "Aucun rappel en attente.",
+      "addOne": "En ajouter un",
+      "unknownClient": "Client inconnu"
+    },
+    "UpcomingAppointments": {
+      "title": "Prochains rendez-vous",
+      "viewAll": "Voir tout",
+      "empty": "Aucun rendez-vous à venir.",
+      "scheduleOne": "En programmer un"
+    },
+    "WeeklyTrendChart": {
+      "title": "Rendez-vous de cette semaine"
+    }
+  },
+  "Status": {
+    "appointments": {
+      "pending": "En attente",
+      "confirmed": "Confirmé",
+      "completed": "Terminé",
+      "cancelled": "Annulé",
+      "no-show": "Absence"
+    },
+    "clients": {
+      "new": "Nouveau",
+      "confirmed": "Confirmé",
+      "follow-up": "À relancer",
+      "closed": "Fermé",
+      "ghosted": "Fantôme"
+    },
+    "reminders": {
+      "overdue": "En retard",
+      "today": "Aujourd'hui",
+      "soon": "Bientôt",
+      "later": "À venir"
+    },
+    "urgency": {
+      "overdue": "En retard",
+      "today": "Aujourd'hui",
+      "soon": "Bientôt",
+      "later": "À venir"
+    }
+  },
+  "ClientsPage": {
+    "header": {
+      "loading": "Chargement des clients…",
+      "count": "{count} clients",
+      "addButton": "Ajouter un client"
+    },
+    "empty": {
+      "title": "Aucun client pour le moment",
+      "subtitle": "Ajoutez votre premier client pour planifier des rendez-vous et envoyer des rappels.",
+      "addButton": "Ajouter votre premier client"
+    },
+    "table": {
+      "name": "Nom",
+      "phone": "Téléphone",
+      "service": "Service",
+      "status": "Statut",
+      "lastContact": "Dernier contact",
+      "actions": "Actions",
+      "view": "Voir",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "deleteConfirm": {
+      "title": "Supprimer le client ?",
+      "message": "Supprimer {name} ? Cette action est irréversible.",
+      "confirm": "Supprimer"
+    },
+    "modal": {
+      "editTitle": "Modifier le client",
+      "addTitle": "Ajouter un client",
+      "nameLabel": "Nom",
+      "namePlaceholder": "Jeanne Dupont",
+      "phoneLabel": "Téléphone",
+      "phonePlaceholder": "+33 6 12 34 56 78",
+      "serviceLabel": "Service",
+      "servicePlaceholder": "Coupe de cheveux, réservation…",
+      "statusLabel": "Statut",
+      "notesLabel": "Notes",
+      "notesPlaceholder": "Préférences, allergies, demandes spéciales…",
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "saveChanges": "Enregistrer",
+      "addSubmit": "Ajouter le client",
+      "errorNoName": "Le nom est requis."
+    },
+    "toolbar": {
+      "searchPlaceholder": "Rechercher par nom, téléphone, ou service…",
+      "searchLabel": "Rechercher des clients",
+      "allStatuses": "Tous les statuts",
+      "sortNameAsc": "Nom A–Z",
+      "sortNameDesc": "Nom Z–A",
+      "sortNewest": "Plus récents d'abord",
+      "sortOldest": "Plus anciens d'abord"
+    },
+    "status": {
+      "new": "",
+      "confirmed": "",
+      "followup": "",
+      "ghosted": ""
+    }
+  },
+  "ClientDetailsPage": {
+    "notFound": "Client introuvable.",
+    "loading": "Chargement du profil du client…",
+    "back": "← Retour aux clients",
+    "phone": "Téléphone :",
+    "service": "Service :",
+    "status": "Statut :",
+    "revenue": "Revenus :",
+    "appointmentHistory": "Historique des rendez-vous",
+    "newAppointment": "Nouveau rendez-vous",
+    "noAppointments": "Aucun rendez-vous pour le moment.",
+    "table": {
+      "date": "Date",
+      "status": "Statut",
+      "amount": "Montant"
+    }
+  },
+  "AppointmentsPage": {
+    "header": {
+      "loading": "Chargement des rendez-vous…",
+      "count": "{count} rendez-vous",
+      "addButton": "Ajouter un rendez-vous"
+    },
+    "unknownClient": "Client inconnu",
+    "noClientsWarning": "Ajoutez au moins un client avant de planifier des rendez-vous.",
+    "goToClients": "Aller aux clients",
+    "empty": {
+      "title": "Aucun rendez-vous pour le moment",
+      "subtitle": "Planifiez votre premier rendez-vous pour suivre les confirmations, les présences et les paiements.",
+      "addButton": "Ajouter votre premier rendez-vous"
+    },
+    "table": {
+      "clientName": "Nom du client",
+      "date": "Date",
+      "status": "Statut",
+      "revenue": "Revenus",
+      "actions": "Actions",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "deleteConfirm": {
+      "title": "Supprimer le rendez-vous ?",
+      "message": "Supprimer le rendez-vous de {name} le {date} ? Cette action est irréversible.",
+      "confirm": "Supprimer"
+    },
+    "modal": {
+      "editTitle": "Modifier le rendez-vous",
+      "addTitle": "Ajouter un rendez-vous",
+      "clientLabel": "Client",
+      "selectClient": "Sélectionner un client",
+      "dateLabel": "Date",
+      "statusLabel": "Statut",
+      "notesLabel": "Notes",
+      "notesPlaceholder": "Demandes spéciales, préférence de salle…",
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "saveChanges": "Enregistrer",
+      "addSubmit": "Ajouter le rendez-vous",
+      "errorNoClient": "Veuillez sélectionner un client.",
+      "errorNoDate": "La date et l'heure sont requises."
+    }
+  },
+  "RemindersPage": {
+    "header": {
+      "loading": "Chargement des rappels…",
+      "count": "{count} rappels",
+      "addButton": "Ajouter un rappel"
+    },
+    "unknownClient": "Client inconnu",
+    "noClientsWarning": "Ajoutez au moins un client avant de créer des rappels.",
+    "goToClients": "Aller aux clients",
+    "empty": {
+      "title": "Aucun rappel pour le moment",
+      "subtitle": "Créez des rappels de relance pour ne jamais manquer un suivi avec vos clients.",
+      "addButton": "Ajouter votre premier rappel"
+    },
+    "table": {
+      "clientName": "Nom du client",
+      "message": "Message",
+      "dueDate": "Date d'échéance",
+      "status": "Statut",
+      "actions": "Actions",
+      "markDone": "Marquer comme terminé",
+      "saving": "Enregistrement…",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "done": "Terminé"
+    },
+    "deleteConfirm": {
+      "title": "Supprimer le rappel ?",
+      "message": "Supprimer le rappel pour {name} ? Cette action est irréversible.",
+      "confirm": "Supprimer"
+    },
+    "modal": {
+      "editTitle": "Modifier le rappel",
+      "addTitle": "Ajouter un rappel",
+      "quickPresets": "Modèles rapides",
+      "clientLabel": "Client",
+      "selectClient": "Sélectionner un client",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Relance concernant leur dernière visite…",
+      "dueDateLabel": "Date d'échéance",
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "saveChanges": "Enregistrer",
+      "addSubmit": "Ajouter le rappel",
+      "errorNoClient": "Veuillez sélectionner un client.",
+      "errorNoMessage": "Le message est requis.",
+      "errorNoDate": "La date d'échéance est requise."
+    },
+    "presets": {
+      "follow-up-24h": "Relance dans 24h",
+      "appointment-24h": "Rappel de rendez-vous (24h)",
+      "payment": "Relance de paiement",
+      "rebook": "Suggestion de nouvelle réservation",
+      "msg-follow-up-24h": "Bonjour — comment s'est passée votre visite ? Réservez votre prochain rendez-vous si vous le souhaitez.",
+      "msg-appointment-24h": "Rappel : vous avez un rendez-vous demain. Répondez pour confirmer ou replanifier.",
+      "msg-payment": "Petit rappel concernant votre solde impayé. N'hésitez pas si vous avez des questions.",
+      "msg-rebook": "Cela fait un moment — souhaitez-vous planifier votre prochaine visite ?"
+    }
+  }
+}

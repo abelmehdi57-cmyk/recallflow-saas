@@ -2,7 +2,16 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseEnv, SUPABASE_SETUP_MESSAGE } from '@/lib/supabase/env';
 
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/auth/callback'];
+const PUBLIC_ROUTES = [
+  '/',
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/auth/callback',
+  '/auth/update-password',
+];
+
+const AUTH_ONLY_ROUTES = ['/login', '/signup', '/forgot-password'];
 
 export async function middleware(request: NextRequest) {
   const isPublicRoute = PUBLIC_ROUTES.includes(request.nextUrl.pathname);
@@ -54,8 +63,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from auth pages
-  if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')) {
+  // Redirect authenticated users away from sign-in pages (not password recovery)
+  if (user && AUTH_ONLY_ROUTES.includes(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);

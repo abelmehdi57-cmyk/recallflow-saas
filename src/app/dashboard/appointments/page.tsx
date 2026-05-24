@@ -2,47 +2,52 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { Appointment, Client } from '@/lib/supabase/types';
-
-const YES_BADGE = 'bg-success-light text-success border-success/25';
-const NO_BADGE = 'bg-foreground/10 text-muted border-border';
+import { useBusiness } from '@/hooks/useBusiness';
+import { ActionError } from '@/components/ui/action-error';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { APPOINTMENT_STATUS_OPTIONS } from '@/lib/appointments/status';
+import { parseAppointment } from '@/lib/appointments/normalize';
+import { StatusBadge } from '@/components/appointments/status-badge';
+import { useBusinessProfile } from '@/hooks/useBusinessProfile';
+import { formatMoney } from '@/lib/format/currency';
+import type { Appointment, AppointmentStatus, Client } from '@/lib/supabase/types';
+import { useTranslations, useLocale } from 'next-intl';
 
 type AppointmentFormData = {
   client_id: string;
   date: string;
-  confirmed: boolean;
-  showed_up: boolean;
-  paid: boolean;
+  status: AppointmentStatus;
+  amount: string;
   notes: string;
 };
 
 const emptyForm: AppointmentFormData = {
   client_id: '',
   date: '',
-  confirmed: false,
-  showed_up: false,
-  paid: false,
+  status: 'pending',
+  amount: '',
   notes: '',
 };
 
 const inputClass =
   'w-full px-4 py-2.5 bg-input border border-input-border rounded-lg text-foreground placeholder:text-muted text-sm';
 
-function getClientName(appointment: Appointment): string {
+function getClientName(appointment: Appointment, t: any): string {
   const clients = appointment.clients;
-  if (!clients) return 'Unknown client';
-  if (Array.isArray(clients)) return clients[0]?.name ?? 'Unknown client';
+  if (!clients) return t('unknownClient');
+  if (Array.isArray(clients)) return clients[0]?.name ?? t('unknownClient');
   return clients.name;
 }
 
-function formatAppointmentDate(iso: string): string {
+function formatAppointmentDate(iso: string, locale: string): string {
   const d = new Date(iso);
-  const datePart = d.toLocaleDateString('en-US', {
+  const datePart = d.toLocaleDateString(locale, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
   });
-  const timePart = d.toLocaleTimeString('en-US', {
+  const timePart = d.toLocaleTimeString(locale, {
     hour: 'numeric',
     minute: '2-digit',
   });
@@ -59,37 +64,37 @@ function fromDatetimeLocal(value: string): string {
   return new Date(value).toISOString();
 }
 
-function appointmentToForm(appointment: Appointment): AppointmentFormData {
+function appointmentToForm(
+  appointment: Appointment,
+  defaultAmount: number,
+): AppointmentFormData {
+  const parsed = parseAppointment(appointment);
   return {
-    client_id: appointment.client_id,
-    date: toDatetimeLocal(appointment.date),
-    confirmed: appointment.confirmed,
-    showed_up: appointment.showed_up,
-    paid: appointment.paid,
-    notes: appointment.notes ?? '',
+    client_id: parsed.client_id,
+    date: toDatetimeLocal(parsed.date),
+    status: parsed.status,
+    amount: String(parsed.amount ?? defaultAmount),
+    notes: parsed.notes ?? '',
   };
 }
 
-function BoolBadge({ value }: { value: boolean }) {
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-        value ? YES_BADGE : NO_BADGE
-      }`}
-    >
-      {value ? 'Yes' : 'No'}
-    </span>
-  );
-}
-
 export default function AppointmentsPage() {
+  const t = useTranslations('AppointmentsPage');
+  const tStatus = useTranslations('Status.appointments');
+  const locale = useLocale();
   const [supabase] = useState(() => createClient());
+  const { businessId, business, loading: businessLoading, error: businessError } =
+    useBusinessProfile(supabase);
 
-  const [businessId, setBusinessId] = useState<string | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [clientOptions, setClientOptions] = useState<Pick<Client, 'id' | 'name'>[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<Appointment | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const loading = businessLoading || listLoading;
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -98,46 +103,24 @@ export default function AppointmentsPage() {
   const [form, setForm] = useState<AppointmentFormData>(emptyForm);
 
   const fetchAppointments = useCallback(async () => {
-    setLoading(true);
+    if (!businessId) {
+      setListLoading(false);
+      return;
+    }
+
+    setListLoading(true);
     setLoadError('');
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setLoading(false);
-      setLoadError('You must be signed in to view appointments.');
-      return;
-    }
-
-    const { data: business, error: businessError } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('owner_id', user.id)
-      .single();
-
-    if (businessError || !business) {
-      setBusinessId(null);
-      setAppointments([]);
-      setClientOptions([]);
-      setLoading(false);
-      setLoadError('No business profile found. Complete setup from the dashboard first.');
-      return;
-    }
-
-    setBusinessId(business.id);
 
     const [appointmentsResult, clientsResult] = await Promise.all([
       supabase
         .from('appointments')
         .select('*, clients(name)')
-        .eq('business_id', business.id)
+        .eq('business_id', businessId)
         .order('date', { ascending: false }),
       supabase
         .from('clients')
         .select('id, name')
-        .eq('business_id', business.id)
+        .eq('business_id', businessId)
         .order('name', { ascending: true }),
     ]);
 
@@ -145,25 +128,34 @@ export default function AppointmentsPage() {
       setLoadError(appointmentsResult.error.message);
       setAppointments([]);
     } else {
-      setAppointments((appointmentsResult.data as Appointment[]) ?? []);
+      setAppointments(
+        ((appointmentsResult.data as Appointment[]) ?? []).map(parseAppointment),
+      );
     }
 
     if (!clientsResult.error) {
       setClientOptions((clientsResult.data as Pick<Client, 'id' | 'name'>[]) ?? []);
     }
 
-    setLoading(false);
-  }, [supabase]);
+    setListLoading(false);
+  }, [supabase, businessId]);
 
   useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
+    if (businessLoading) return;
+    if (businessError) {
+      setLoadError(businessError);
+      setListLoading(false);
+      return;
+    }
+    void fetchAppointments();
+  }, [businessLoading, businessError, fetchAppointments]);
 
   const openAddModal = () => {
     setEditingAppointment(null);
     setForm({
       ...emptyForm,
       client_id: clientOptions[0]?.id ?? '',
+      amount: String(business?.default_appointment_value ?? 75),
     });
     setFormError('');
     setModalOpen(true);
@@ -171,7 +163,7 @@ export default function AppointmentsPage() {
 
   const openEditModal = (appointment: Appointment) => {
     setEditingAppointment(appointment);
-    setForm(appointmentToForm(appointment));
+    setForm(appointmentToForm(appointment, business?.default_appointment_value ?? 75));
     setFormError('');
     setModalOpen(true);
   };
@@ -189,24 +181,27 @@ export default function AppointmentsPage() {
     if (!businessId) return;
 
     if (!form.client_id) {
-      setFormError('Please select a client.');
+      setFormError(t('modal.errorNoClient'));
       return;
     }
 
     if (!form.date) {
-      setFormError('Date and time are required.');
+      setFormError(t('modal.errorNoDate'));
       return;
     }
 
     setSaving(true);
     setFormError('');
 
+    const amountNum = form.amount ? parseFloat(form.amount) : null;
     const payload = {
       client_id: form.client_id,
       date: fromDatetimeLocal(form.date),
-      confirmed: form.confirmed,
-      showed_up: form.showed_up,
-      paid: form.paid,
+      status: form.status,
+      amount: form.status === 'completed' ? amountNum : null,
+      confirmed: form.status === 'confirmed' || form.status === 'completed',
+      showed_up: form.status === 'completed',
+      paid: form.status === 'completed',
       notes: form.notes.trim() || null,
     };
 
@@ -240,24 +235,26 @@ export default function AppointmentsPage() {
     await fetchAppointments();
   };
 
-  const handleDelete = async (appointment: Appointment) => {
-    const clientName = getClientName(appointment);
-    const confirmed = window.confirm(
-      `Delete appointment for ${clientName} on ${formatAppointmentDate(appointment.date)}? This cannot be undone.`,
-    );
-    if (!confirmed || !businessId) return;
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget || !businessId) return;
+
+    setDeleting(true);
+    setActionError('');
 
     const { error } = await supabase
       .from('appointments')
       .delete()
-      .eq('id', appointment.id)
+      .eq('id', deleteTarget.id)
       .eq('business_id', businessId);
 
+    setDeleting(false);
+
     if (error) {
-      window.alert(error.message);
+      setActionError(error.message);
       return;
     }
 
+    setDeleteTarget(null);
     await fetchAppointments();
   };
 
@@ -269,8 +266,8 @@ export default function AppointmentsPage() {
         <div>
           <p className="text-sm text-muted">
             {loading
-              ? 'Loading appointments…'
-              : `${appointments.length} appointment${appointments.length === 1 ? '' : 's'}`}
+              ? t('header.loading')
+              : t('header.count', { count: appointments?.length ?? 0 })}
           </p>
         </div>
         <button
@@ -282,18 +279,20 @@ export default function AppointmentsPage() {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Add Appointment
+          {t('header.addButton')}
         </button>
       </div>
 
       {noClients && !loading && businessId && (
         <div className="bg-warning-light border border-warning/25 text-warning rounded-lg p-4 text-sm">
-          Add at least one client before scheduling appointments.{' '}
+          {t('noClientsWarning')}{' '}
           <a href="/dashboard/clients" className="underline font-medium hover:text-foreground">
-            Go to Clients
+            {t('goToClients')}
           </a>
         </div>
       )}
+
+      <ActionError message={actionError} onDismiss={() => setActionError('')} />
 
       {loadError && (
         <div className="bg-danger-light border border-danger/20 text-danger rounded-lg p-4 text-sm">
@@ -303,10 +302,7 @@ export default function AppointmentsPage() {
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin mb-4" />
-            <p className="text-sm text-muted">Loading appointments…</p>
-          </div>
+          <LoadingSpinner label={t('header.loading')} />
         ) : appointments.length === 0 && !loadError ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-4">
             <div className="w-16 h-16 rounded-2xl bg-primary-light flex items-center justify-center mb-4">
@@ -314,9 +310,9 @@ export default function AppointmentsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold text-foreground mb-2">No appointments yet</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-2">{t('empty.title')}</h2>
             <p className="text-muted text-sm max-w-sm mb-6">
-              Schedule your first appointment to track confirmations, attendance, and payments.
+              {t('empty.subtitle')}
             </p>
             <button
               type="button"
@@ -327,7 +323,7 @@ export default function AppointmentsPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
-              Add your first appointment
+              {t('empty.addButton')}
             </button>
           </div>
         ) : appointments.length > 0 ? (
@@ -335,29 +331,34 @@ export default function AppointmentsPage() {
             <table className="w-full min-w-[880px] text-sm">
               <thead>
                 <tr className="border-b border-border bg-background/50">
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Client Name</th>
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Date</th>
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Confirmed</th>
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Showed Up</th>
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Paid</th>
-                  <th className="text-right font-medium text-muted px-5 py-3.5">Actions</th>
+                  <th className="text-start font-medium text-muted px-5 py-3.5">{t('table.clientName')}</th>
+                  <th className="text-start font-medium text-muted px-5 py-3.5">{t('table.date')}</th>
+                  <th className="text-start font-medium text-muted px-5 py-3.5">{t('table.status')}</th>
+                  <th className="text-start font-medium text-muted px-5 py-3.5">{t('table.revenue')}</th>
+                  <th className="text-end font-medium text-muted px-5 py-3.5">{t('table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {appointments.map((appointment) => (
                   <tr key={appointment.id} className="hover:bg-card-hover/50 transition-colors">
                     <td className="px-5 py-4 font-medium text-foreground">
-                      {getClientName(appointment)}
+                      {getClientName(appointment, t)}
                     </td>
-                    <td className="px-5 py-4 text-muted">{formatAppointmentDate(appointment.date)}</td>
+                    <td className="px-5 py-4 text-muted">{formatAppointmentDate(appointment.date, locale)}</td>
                     <td className="px-5 py-4">
-                      <BoolBadge value={appointment.confirmed} />
+                      <StatusBadge status={parseAppointment(appointment).status} />
                     </td>
-                    <td className="px-5 py-4">
-                      <BoolBadge value={appointment.showed_up} />
-                    </td>
-                    <td className="px-5 py-4">
-                      <BoolBadge value={appointment.paid} />
+                    <td className="px-5 py-4 text-muted">
+                      {parseAppointment(appointment).status === 'completed'
+                        ? formatMoney(
+                            Number(
+                              parseAppointment(appointment).amount ??
+                                business?.default_appointment_value ??
+                                0,
+                            ),
+                            business?.currency ?? 'USD',
+                          )
+                        : '—'}
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
@@ -366,14 +367,14 @@ export default function AppointmentsPage() {
                           onClick={() => openEditModal(appointment)}
                           className="px-3 py-1.5 text-xs font-medium text-foreground bg-background border border-border rounded-lg hover:border-primary/40 hover:text-primary cursor-pointer"
                         >
-                          Edit
+                          {t('table.edit')}
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(appointment)}
+                          onClick={() => setDeleteTarget(appointment)}
                           className="px-3 py-1.5 text-xs font-medium text-danger bg-danger-light border border-danger/20 rounded-lg hover:bg-danger/20 cursor-pointer"
                         >
-                          Delete
+                          {t('table.delete')}
                         </button>
                       </div>
                     </td>
@@ -384,6 +385,19 @@ export default function AppointmentsPage() {
           </div>
         ) : null}
       </div>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={t('deleteConfirm.title')}
+        message={deleteTarget ? t('deleteConfirm.message', { name: getClientName(deleteTarget, t), date: formatAppointmentDate(deleteTarget.date, locale) }) : ''}
+        confirmLabel={t('deleteConfirm.confirm')}
+        destructive
+        loading={deleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          if (!deleting) setDeleteTarget(null);
+        }}
+      />
 
       {modalOpen && (
         <div
@@ -401,7 +415,7 @@ export default function AppointmentsPage() {
           <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-xl p-6 z-10 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between mb-5">
               <h2 id="appointment-modal-title" className="text-lg font-semibold text-foreground">
-                {editingAppointment ? 'Edit Appointment' : 'Add Appointment'}
+                {editingAppointment ? t('modal.editTitle') : t('modal.addTitle')}
               </h2>
               <button
                 type="button"
@@ -425,7 +439,7 @@ export default function AppointmentsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="appointment-client" className="block text-sm font-medium mb-1.5 text-foreground/80">
-                  Client <span className="text-danger">*</span>
+                  {t('modal.clientLabel')} <span className="text-danger">*</span>
                 </label>
                 <select
                   id="appointment-client"
@@ -435,7 +449,7 @@ export default function AppointmentsPage() {
                   disabled={noClients}
                   className={inputClass}
                 >
-                  <option value="">Select a client</option>
+                  <option value="">{t('modal.selectClient')}</option>
                   {clientOptions.map((client) => (
                     <option key={client.id} value={client.id}>
                       {client.name}
@@ -446,7 +460,7 @@ export default function AppointmentsPage() {
 
               <div>
                 <label htmlFor="appointment-date" className="block text-sm font-medium mb-1.5 text-foreground/80">
-                  Date <span className="text-danger">*</span>
+                  {t('modal.dateLabel')} <span className="text-danger">*</span>
                 </label>
                 <input
                   id="appointment-date"
@@ -458,40 +472,53 @@ export default function AppointmentsPage() {
                 />
               </div>
 
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-foreground/80">Status</p>
-                {(
-                  [
-                    { key: 'confirmed' as const, label: 'Confirmed' },
-                    { key: 'showed_up' as const, label: 'Showed Up' },
-                    { key: 'paid' as const, label: 'Paid' },
-                  ] as const
-                ).map(({ key, label }) => (
-                  <label
-                    key={key}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background cursor-pointer hover:border-primary/30"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form[key]}
-                      onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.checked }))}
-                      className="w-4 h-4 rounded border-input-border text-primary focus:ring-primary focus:ring-offset-0 bg-input"
-                    />
-                    <span className="text-sm text-foreground">{label}</span>
-                  </label>
-                ))}
+              <div>
+                <label htmlFor="appointment-status" className="block text-sm font-medium mb-1.5 text-foreground/80">
+                  {t('modal.statusLabel')}
+                </label>
+                <select
+                  id="appointment-status"
+                  value={form.status}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, status: e.target.value as AppointmentStatus }))
+                  }
+                  className={inputClass}
+                >
+                  {APPOINTMENT_STATUS_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {tStatus(opt.value as any)}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              {form.status === 'completed' && (
+                <div>
+                  <label htmlFor="appointment-amount" className="block text-sm font-medium mb-1.5 text-foreground/80">
+                    {t('modal.revenueLabel', { currency: business?.currency ?? 'USD' })}
+                  </label>
+                  <input
+                    id="appointment-amount"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={form.amount}
+                    onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+                    className={inputClass}
+                  />
+                </div>
+              )}
 
               <div>
                 <label htmlFor="appointment-notes" className="block text-sm font-medium mb-1.5 text-foreground/80">
-                  Notes
+                  {t('modal.notesLabel')}
                 </label>
                 <textarea
                   id="appointment-notes"
                   value={form.notes}
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   rows={3}
-                  placeholder="Special requests, room preference…"
+                  placeholder={t('modal.notesPlaceholder')}
                   className={`${inputClass} resize-none`}
                 />
               </div>
@@ -503,14 +530,14 @@ export default function AppointmentsPage() {
                   disabled={saving}
                   className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-background border border-border rounded-lg hover:bg-card-hover disabled:opacity-50 cursor-pointer"
                 >
-                  Cancel
+                  {t('modal.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving || noClients}
                   className="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer"
                 >
-                  {saving ? 'Saving…' : editingAppointment ? 'Save changes' : 'Add appointment'}
+                  {saving ? t('modal.saving') : editingAppointment ? t('modal.saveChanges') : t('modal.addSubmit')}
                 </button>
               </div>
             </form>
@@ -519,5 +546,4 @@ export default function AppointmentsPage() {
       )}
     </div>
   );
-  
 }

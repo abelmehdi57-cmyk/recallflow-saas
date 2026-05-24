@@ -10,8 +10,14 @@ create table public.businesses (
   owner_id uuid references auth.users(id) on delete cascade not null,
   business_name text not null default 'My Business',
   plan text not null default 'free',
+  currency text not null default 'USD',
+  timezone text not null default 'UTC',
+  business_type text not null default 'general',
+  default_appointment_value numeric(10, 2) not null default 75.00,
   created_at timestamptz default now() not null
 );
+
+create unique index if not exists idx_businesses_owner_id_unique on public.businesses(owner_id);
 
 -- 2. CLIENTS TABLE
 create type client_status as enum ('new', 'confirmed', 'follow-up', 'closed', 'ghosted');
@@ -29,11 +35,21 @@ create table public.clients (
 );
 
 -- 3. APPOINTMENTS TABLE
+create type appointment_status as enum (
+  'pending',
+  'confirmed',
+  'completed',
+  'cancelled',
+  'no-show'
+);
+
 create table public.appointments (
   id uuid default gen_random_uuid() primary key,
   business_id uuid references public.businesses(id) on delete cascade not null,
   client_id uuid references public.clients(id) on delete cascade not null,
   date timestamptz not null,
+  status appointment_status not null default 'pending',
+  amount numeric(10, 2),
   confirmed boolean default false,
   showed_up boolean default false,
   paid boolean default false,
@@ -154,6 +170,7 @@ create index idx_clients_business_id on public.clients(business_id);
 create index idx_appointments_business_id on public.appointments(business_id);
 create index idx_appointments_client_id on public.appointments(client_id);
 create index idx_appointments_date on public.appointments(date);
+create index idx_appointments_status on public.appointments(status);
 create index idx_reminders_business_id on public.reminders(business_id);
 create index idx_reminders_date on public.reminders(date);
 create index idx_reminders_done on public.reminders(done);

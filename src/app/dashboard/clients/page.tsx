@@ -1,8 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import {
+  ClientListToolbar,
+  filterAndSortClients,
+  type ClientSort,
+} from '@/components/clients/client-list-toolbar';
+import { useBusiness } from '@/hooks/useBusiness';
+import { ActionError } from '@/components/ui/action-error';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import type { Client, ClientStatus } from '@/lib/supabase/types';
+import { useTranslations, useLocale } from 'next-intl';
 
 const STATUS_OPTIONS: { value: ClientStatus; label: string }[] = [
   { value: 'new', label: 'New' },
@@ -36,13 +48,9 @@ const emptyForm: ClientFormData = {
   notes: '',
 };
 
-function formatStatusLabel(status: ClientStatus): string {
-  return STATUS_OPTIONS.find((o) => o.value === status)?.label ?? status;
-}
-
-function formatLastContact(iso: string | null): string {
+function formatLastContact(iso: string | null, locale: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', {
+  return new Date(iso).toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -63,53 +71,51 @@ const inputClass =
   'w-full px-4 py-2.5 bg-input border border-input-border rounded-lg text-foreground placeholder:text-muted text-sm';
 
 export default function ClientsPage() {
-  const [supabase] = useState(() => createClient());
+  const t = useTranslations('ClientsPage');
+  const tStatus = useTranslations('Status.clients');
+  const locale = useLocale();
 
-  const [businessId, setBusinessId] = useState<string | null>(null);
+  const [supabase] = useState(() => createClient());
+  const { businessId, loading: businessLoading, error: businessError } = useBusiness(supabase);
+
   const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const [actionError, setActionError] = useState('');
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const loading = businessLoading || listLoading;
+
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ClientStatus | 'all'>('all');
+  const [sort, setSort] = useState<ClientSort>('name-asc');
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [form, setForm] = useState<ClientFormData>(emptyForm);
 
+  const displayedClients = useMemo(
+    () => filterAndSortClients(clients, search, statusFilter, sort),
+    [clients, search, statusFilter, sort],
+  );
+
   const fetchClients = useCallback(async () => {
-    setLoading(true);
-    setLoadError('');
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setLoading(false);
-      setLoadError('You must be signed in to view clients.');
-      return;
-    }
-
-    const { data: business, error: businessError } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('owner_id', user.id)
-      .single();
-
-    if (businessError || !business) {
-      setBusinessId(null);
+    if (!businessId) {
+      setListLoading(false);
       setClients([]);
-      setLoading(false);
-      setLoadError('No business profile found. Complete setup from the dashboard first.');
       return;
     }
 
-    setBusinessId(business.id);
+    setListLoading(true);
+    setLoadError('');
 
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('business_id', business.id)
+      .eq('business_id', businessId)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -119,12 +125,18 @@ export default function ClientsPage() {
       setClients((data as Client[]) ?? []);
     }
 
-    setLoading(false);
-  }, [supabase]);
+    setListLoading(false);
+  }, [supabase, businessId]);
 
   useEffect(() => {
-    fetchClients();
-  }, [fetchClients]);
+    if (businessLoading) return;
+    if (businessError) {
+      setLoadError(businessError);
+      setListLoading(false);
+      return;
+    }
+    void fetchClients();
+  }, [businessLoading, businessError, fetchClients]);
 
   const openAddModal = () => {
     setEditingClient(null);
@@ -154,7 +166,7 @@ export default function ClientsPage() {
 
     const name = form.name.trim();
     if (!name) {
-      setFormError('Name is required.');
+      setFormError(t('modal.errorNoName'));
       return;
     }
 
@@ -199,23 +211,26 @@ export default function ClientsPage() {
     await fetchClients();
   };
 
-  const handleDelete = async (client: Client) => {
-    const confirmed = window.confirm(
-      `Delete ${client.name}? This cannot be undone.`,
-    );
-    if (!confirmed || !businessId) return;
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget || !businessId) return;
+
+    setDeleting(true);
+    setActionError('');
 
     const { error } = await supabase
       .from('clients')
       .delete()
-      .eq('id', client.id)
+      .eq('id', deleteTarget.id)
       .eq('business_id', businessId);
 
+    setDeleting(false);
+
     if (error) {
-      window.alert(error.message);
+      setActionError(error.message);
       return;
     }
 
+    setDeleteTarget(null);
     await fetchClients();
   };
 
@@ -225,8 +240,8 @@ export default function ClientsPage() {
         <div>
           <p className="text-sm text-muted">
             {loading
-              ? 'Loading clients…'
-              : `${clients.length} client${clients.length === 1 ? '' : 's'}`}
+              ? t('header.loading')
+              : t('header.count', { count: clients?.length ?? 0 })}
           </p>
         </div>
         <button
@@ -238,9 +253,11 @@ export default function ClientsPage() {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Add Client
+          {t('header.addButton')}
         </button>
       </div>
+
+      <ActionError message={actionError} onDismiss={() => setActionError('')} />
 
       {loadError && (
         <div className="bg-danger-light border border-danger/20 text-danger rounded-lg p-4 text-sm">
@@ -248,77 +265,88 @@ export default function ClientsPage() {
         </div>
       )}
 
+      {!loading && clients.length > 0 && (
+        <ClientListToolbar
+          search={search}
+          onSearchChange={setSearch}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          sort={sort}
+          onSortChange={setSort}
+        />
+      )}
+
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin mb-4" />
-            <p className="text-sm text-muted">Loading clients…</p>
-          </div>
+          <LoadingSpinner label={t('header.loading')} />
         ) : clients.length === 0 && !loadError ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-            <div className="w-16 h-16 rounded-2xl bg-primary-light flex items-center justify-center mb-4">
+          <EmptyState
+            icon={
               <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
               </svg>
-            </div>
-            <h2 className="text-lg font-semibold text-foreground mb-2">No clients yet</h2>
-            <p className="text-muted text-sm max-w-sm mb-6">
-              Add your first client to start tracking appointments, follow-ups, and contact history.
-            </p>
-            <button
-              type="button"
-              onClick={openAddModal}
-              disabled={!businessId}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Add your first client
-            </button>
-          </div>
-        ) : clients.length > 0 ? (
+            }
+            title={t('empty.title')}
+            description={t('empty.subtitle')}
+            actionLabel={t('empty.addButton')}
+            onAction={openAddModal}
+            actionDisabled={!businessId}
+          />
+        ) : displayedClients.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="border-b border-border bg-background/50">
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Name</th>
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Phone</th>
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Service</th>
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Status</th>
-                  <th className="text-left font-medium text-muted px-5 py-3.5">Last Contact</th>
-                  <th className="text-right font-medium text-muted px-5 py-3.5">Actions</th>
+                  <th className="text-start font-medium text-muted px-5 py-3.5">{t('table.name')}</th>
+                  <th className="text-start font-medium text-muted px-5 py-3.5">{t('table.phone')}</th>
+                  <th className="text-start font-medium text-muted px-5 py-3.5">{t('table.service')}</th>
+                  <th className="text-start font-medium text-muted px-5 py-3.5">{t('table.status')}</th>
+                  <th className="text-start font-medium text-muted px-5 py-3.5">{t('table.lastContact')}</th>
+                  <th className="text-end font-medium text-muted px-5 py-3.5">{t('table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {clients.map((client) => (
+                {displayedClients.map((client) => (
                   <tr key={client.id} className="hover:bg-card-hover/50 transition-colors">
-                    <td className="px-5 py-4 font-medium text-foreground">{client.name}</td>
-                    <td className="px-5 py-4 text-muted">{client.phone || '—'}</td>
+                    <td className="px-5 py-4 font-medium">
+                      <Link
+                        href={`/dashboard/clients/${client.id}`}
+                        className="text-foreground hover:text-primary"
+                      >
+                        {client.name}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-4 text-muted" dir="ltr">{client.phone || '—'}</td>
                     <td className="px-5 py-4 text-muted">{client.service || '—'}</td>
                     <td className="px-5 py-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${STATUS_BADGE[client.status]}`}
                       >
-                        {formatStatusLabel(client.status)}
+                        {tStatus(client.status as any)}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-muted">{formatLastContact(client.last_contact)}</td>
+                    <td className="px-5 py-4 text-muted">{formatLastContact(client.last_contact, locale)}</td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/dashboard/clients/${client.id}`}
+                          className="px-3 py-1.5 text-xs font-medium text-foreground bg-background border border-border rounded-lg hover:border-primary/40 hover:text-primary"
+                        >
+                          {t('table.view')}
+                        </Link>
                         <button
                           type="button"
                           onClick={() => openEditModal(client)}
                           className="px-3 py-1.5 text-xs font-medium text-foreground bg-background border border-border rounded-lg hover:border-primary/40 hover:text-primary cursor-pointer"
                         >
-                          Edit
+                          {t('table.edit')}
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(client)}
+                          onClick={() => setDeleteTarget(client)}
                           className="px-3 py-1.5 text-xs font-medium text-danger bg-danger-light border border-danger/20 rounded-lg hover:bg-danger/20 cursor-pointer"
                         >
-                          Delete
+                          {t('table.delete')}
                         </button>
                       </div>
                     </td>
@@ -329,6 +357,19 @@ export default function ClientsPage() {
           </div>
         ) : null}
       </div>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={t('deleteConfirm.title')}
+        message={deleteTarget ? t('deleteConfirm.message', { name: deleteTarget.name }) : ''}
+        confirmLabel={t('deleteConfirm.confirm')}
+        destructive
+        loading={deleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          if (!deleting) setDeleteTarget(null);
+        }}
+      />
 
       {modalOpen && (
         <div
@@ -343,10 +384,10 @@ export default function ClientsPage() {
             onClick={closeModal}
             aria-label="Close modal"
           />
-          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-xl p-6 z-10">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-xl p-6 z-10 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between mb-5">
               <h2 id="client-modal-title" className="text-lg font-semibold text-foreground">
-                {editingClient ? 'Edit Client' : 'Add Client'}
+                {editingClient ? t('modal.editTitle') : t('modal.addTitle')}
               </h2>
               <button
                 type="button"
@@ -370,7 +411,7 @@ export default function ClientsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="client-name" className="block text-sm font-medium mb-1.5 text-foreground/80">
-                  Name <span className="text-danger">*</span>
+                  {t('modal.nameLabel')} <span className="text-danger">*</span>
                 </label>
                 <input
                   id="client-name"
@@ -378,42 +419,43 @@ export default function ClientsPage() {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   required
-                  placeholder="Jane Smith"
+                  placeholder={t('modal.namePlaceholder')}
                   className={inputClass}
                 />
               </div>
 
               <div>
                 <label htmlFor="client-phone" className="block text-sm font-medium mb-1.5 text-foreground/80">
-                  Phone
+                  {t('modal.phoneLabel')}
                 </label>
                 <input
                   id="client-phone"
                   type="tel"
                   value={form.phone}
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                  placeholder="+1 555 0100"
+                  placeholder={t('modal.phonePlaceholder')}
                   className={inputClass}
+                  dir="ltr"
                 />
               </div>
 
               <div>
                 <label htmlFor="client-service" className="block text-sm font-medium mb-1.5 text-foreground/80">
-                  Service
+                  {t('modal.serviceLabel')}
                 </label>
                 <input
                   id="client-service"
                   type="text"
                   value={form.service}
                   onChange={(e) => setForm((f) => ({ ...f, service: e.target.value }))}
-                  placeholder="Haircut, dinner reservation…"
+                  placeholder={t('modal.servicePlaceholder')}
                   className={inputClass}
                 />
               </div>
 
               <div>
                 <label htmlFor="client-status" className="block text-sm font-medium mb-1.5 text-foreground/80">
-                  Status
+                  {t('modal.statusLabel')}
                 </label>
                 <select
                   id="client-status"
@@ -423,7 +465,7 @@ export default function ClientsPage() {
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {tStatus(opt.value as any)}
                     </option>
                   ))}
                 </select>
@@ -431,14 +473,14 @@ export default function ClientsPage() {
 
               <div>
                 <label htmlFor="client-notes" className="block text-sm font-medium mb-1.5 text-foreground/80">
-                  Notes
+                  {t('modal.notesLabel')}
                 </label>
                 <textarea
                   id="client-notes"
                   value={form.notes}
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   rows={3}
-                  placeholder="Preferences, allergies, special requests…"
+                  placeholder={t('modal.notesPlaceholder')}
                   className={`${inputClass} resize-none`}
                 />
               </div>
@@ -450,14 +492,14 @@ export default function ClientsPage() {
                   disabled={saving}
                   className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-background border border-border rounded-lg hover:bg-card-hover disabled:opacity-50 cursor-pointer"
                 >
-                  Cancel
+                  {t('modal.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer"
                 >
-                  {saving ? 'Saving…' : editingClient ? 'Save changes' : 'Add client'}
+                  {saving ? t('modal.saving') : editingClient ? t('modal.saveChanges') : t('modal.addSubmit')}
                 </button>
               </div>
             </form>
